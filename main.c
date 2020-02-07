@@ -2,7 +2,6 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 #include <assert.h>
-#include <stdlib.h>
 
 #include "serial.h"
 #include "avr_const.h"
@@ -66,11 +65,6 @@ void print_hex16(uint16_t x)
 void __attribute__((naked)) ADC_vect(void)
 {
 	asm("reti");
-}
-
-void panic(void)
-{
-	exit(0);
 }
 
 int main (void)
