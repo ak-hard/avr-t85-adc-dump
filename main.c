@@ -8,6 +8,8 @@
 
 // ADC is constantly running, even when MCU is active, otherwise, use a low-noise mode
 #define FREE_RUNNING
+//#define DIFFERENTIAL
+#define SWITCH_INPUTS
 
 const uint8_t next_admux[4] =
 {
@@ -21,8 +23,10 @@ int16_t read_adc(void)
 {
 	uint8_t l = ADCL;
 	uint8_t h = ADCH;
+#ifdef DIFFERENTIAL
 	if (h & 2)
 		h |= 0xfc;
+#endif
 	return ((uint16_t)h << 8) | l;
 }
 
@@ -82,6 +86,10 @@ int main (void)
 	ADCSRA |= 1 << ADEN | ADCSRA_ADPS_DIV_32; // 125 kHz at 4 MHz
 	ADMUX = next_admux[3];
 
+#ifdef DIFFERENTIAL
+	ADCSRB |= BIN;
+#endif
+
 #ifdef FREE_RUNNING
 	ADCSRB |= ADCSRB_ADTS_FREE_RUNNING;
 	ADCSRA |= 1 << ADATE | 1 << ADSC; // start the first conversion in the free running mode
@@ -112,6 +120,7 @@ int main (void)
 		print('\n');
 
 		// may need time to settle after changing ADMUX or only after changing Vref?
+#ifdef SWITCH_INPUTS
 		if ((i & bits(6)) == bits(6)
 #ifdef FREE_RUNNING
 				- 1
@@ -120,5 +129,6 @@ int main (void)
 		{
 			ADMUX = next_admux[(i >> 6) & 0x3];
 		}
+#endif
 	}
 }
